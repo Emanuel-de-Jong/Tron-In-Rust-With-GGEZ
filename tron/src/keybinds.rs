@@ -4,8 +4,7 @@ use tron::*;
 
 pub struct Keybinds {
     pub general: HashMap<Action, KeyCode>,
-    pub player1: HashMap<Direction, KeyCode>,
-    pub player2: HashMap<Direction, KeyCode>
+    pub players: Vec<HashMap<Direction, KeyCode>>
 }
 
 impl Keybinds {
@@ -20,25 +19,30 @@ impl Keybinds {
         player1.insert(Direction::Down, KeyCode::S);
 
         let mut player2 = HashMap::new();
-        player2.insert(Direction::Left, KeyCode::G);
-        player2.insert(Direction::Right, KeyCode::J);
-        player2.insert(Direction::Up, KeyCode::Y);
-        player2.insert(Direction::Down, KeyCode::H);
+        player2.insert(Direction::Left, KeyCode::F);
+        player2.insert(Direction::Right, KeyCode::H);
+        player2.insert(Direction::Up, KeyCode::T);
+        player2.insert(Direction::Down, KeyCode::G);
+
+        let mut player3 = HashMap::new();
+        player3.insert(Direction::Left, KeyCode::J);
+        player3.insert(Direction::Right, KeyCode::L);
+        player3.insert(Direction::Up, KeyCode::I);
+        player3.insert(Direction::Down, KeyCode::K);
+
+        let mut player4 = HashMap::new();
+        player4.insert(Direction::Left, KeyCode::Left);
+        player4.insert(Direction::Right, KeyCode::Right);
+        player4.insert(Direction::Up, KeyCode::Up);
+        player4.insert(Direction::Down, KeyCode::Down);
 
         Keybinds {
             general: general,
-            player1: player1,
-            player2: player2
+            players: vec![player1, player2, player3, player4]
         }
     }
 
     pub fn player(&self, number: u8) -> &HashMap<Direction, KeyCode> {
-        if number == 1 {
-            return &self.player1;
-        }
-        else if number == 2 {
-            return &self.player2;
-        }
-        &self.player1
+        &self.players[(number-1) as usize]
     }
 }

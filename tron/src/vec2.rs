@@ -23,8 +23,8 @@ impl Hash for Vec2 {
 }
 
 impl From<Vec2> for Point2<f32> {
-    fn from(vec: Vec2) -> Point2<f32> {
-        Point2 { x: vec.x, y: vec.y }
+    fn from(vec2: Vec2) -> Point2<f32> {
+        Point2 { x: vec2.x, y: vec2.y }
     }
 }
 

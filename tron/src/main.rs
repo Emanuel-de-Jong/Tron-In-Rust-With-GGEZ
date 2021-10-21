@@ -26,10 +26,44 @@ struct MainState {
 impl MainState {
     fn new(ctx: &mut Context) -> GameResult<MainState> {
         let x = (V_GRIDS/10.0).floor()*GRID_SIZE;
-        let players = vec![
-            Player::new(ctx, 1, Vec2::new(x, SCREEN_HEIGHT/2.0), Color::new(0.5, 0.5, 1.0, 1.0), Direction::Right)?,
-            Player::new(ctx, 2, Vec2::new(SCREEN_WIDTH-x-GRID_SIZE, SCREEN_HEIGHT/2.0), Color::new(0.5, 1.0, 0.5, 1.0), Direction::Left)?
-        ];
+        let y = (H_GRIDS/10.0).floor()*GRID_SIZE;
+
+        let mut players: Vec<Player> = Vec::new();
+        for i in 1..player::PLAYER_COUNT+1 {
+            let mut position = Vec2::new(SCREEN_WIDTH/2.0, SCREEN_HEIGHT/2.0);
+            let mut color = Color::new(0.5, 0.5, 0.5, 1.0);
+            let mut starting_dir = Direction::Left;
+            match i {
+                1 => {
+                    position.x = x;
+                    color.b = 1.0;
+                    starting_dir = Direction::Right;
+                }
+                2 => {
+                    position.x = SCREEN_WIDTH-x-GRID_SIZE;
+                    color.g = 1.0;
+                    starting_dir = Direction::Left;
+                }
+                3 => {
+                    position.y = y;
+                    color.b = 1.0;
+                    color.g = 1.0;
+                    starting_dir = Direction::Down;
+                }
+                4 => {
+                    position.y = SCREEN_HEIGHT-y-GRID_SIZE;
+                    color.b = 1.0;
+                    color.r = 1.0;
+                    starting_dir = Direction::Up;
+                }
+                _ => ()
+            }
+
+            players.push(
+                Player::new(ctx, i, position, color, starting_dir)?
+            );
+        }
+        
         Ok(MainState {
             keybinds: Keybinds::default(),
             background: Background::new(ctx)?,
@@ -40,7 +74,7 @@ impl MainState {
     }
 
     fn check_win(&mut self) {
-        if self.players.iter().map(|player| player.dead as u8).sum::<u8>() > 0 {
+        if self.players.iter().map(|player| player.dead as u8).sum::<u8>() >= player::PLAYER_COUNT-1 {
             for player in self.players.iter_mut() {
                 player.paused = true;
 
@@ -69,7 +103,10 @@ impl event::EventHandler<ggez::GameError> for MainState {
         graphics::clear(ctx, background::BG_COLOR);
         
         for player in self.players.iter_mut() {
-            player.draw(ctx)?;
+            player.draw_before(ctx)?;
+        }
+        for player in self.players.iter_mut() {
+            player.draw_after(ctx)?;
         }
         
         self.background.draw(ctx)?;

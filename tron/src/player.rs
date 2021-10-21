@@ -1,11 +1,12 @@
 use tron::*;
 use crate::vec2::Vec2;
 use ggez::event::{KeyCode, KeyMods};
-use ggez::graphics::{self, Color, Mesh, Font, Text};
+use ggez::graphics::{self, Color, Font, Mesh, Text, TextFragment};
 use ggez::{Context, GameResult};
 use std::collections::{HashMap, HashSet};
 
-pub const DRIVES_PER_SECOND: u32 = 10;
+pub const DRIVES_PER_SECOND: u32 = 3;
+pub const PLAYER_COUNT: u8 = 4;
 
 #[derive(Clone)]
 pub struct Player {
@@ -24,13 +25,12 @@ pub struct Player {
 impl Player {
     pub fn new(ctx: &mut Context, number: u8, position: Vec2, color: Color, starting_dir: Direction) -> GameResult<Player> {
         let mut trail_color = color.clone();
-        trail_color.a = 0.7;
+        trail_color.a = 0.5;
 
         let rect = Player::create_rect(ctx, color)?;
         let trail_rect = Player::create_rect(ctx, trail_color)?;
 
-        let font = Font::new(ctx, FONT_PATH)?;
-        let text = Text::new((number.to_string(), font, 20.0));
+        let text = Text::new((number.to_string(), Font::new(ctx, FONT_PATH)?, 20.0));
         let text_offset = Vec2::new(
             (GRID_SIZE - text.width(ctx)) / 2.0,
             (GRID_SIZE - text.height(ctx)) / 2.0
@@ -45,7 +45,7 @@ impl Player {
             dir: starting_dir,
             dead: false,
             paused: false,
-            text: Text::new((number.to_string(), font, 20.0)),
+            text: text,
             text_offset: text_offset
         };
         Ok(s)
@@ -95,7 +95,12 @@ impl Player {
 
     fn die(&mut self, ctx: &mut Context) -> GameResult<()> {
         self.dead = true;
-        self.rect = Player::create_rect(ctx, Color::new(1.0, 0.0, 0.0, 1.0))?;
+
+        let color = Color::new(1.0, 0.0, 0.0, 1.0);
+        let font = Font::new(ctx, FONT_PATH)?;
+        let fragment: TextFragment = (self.number.to_string(), font, 22.0).into();
+        let fragment = fragment.color(color);
+        self.text = Text::new(fragment);
         Ok(())
     }
 }
@@ -111,14 +116,16 @@ impl Player {
         Ok(())
     }
 
-    pub fn draw(&mut self, ctx: &mut Context) -> GameResult {
+    pub fn draw_before(&mut self, ctx: &mut Context) -> GameResult {
         for pos in self.prev_positions.iter() {
             graphics::draw(ctx, &self.trail_rect, (*pos,))?;
         }
+        Ok(())
+    }
 
+    pub fn draw_after(&mut self, ctx: &mut Context) -> GameResult {
         graphics::draw(ctx, &self.rect, (self.position,))?;
         graphics::draw(ctx, &self.text, (self.position + self.text_offset,))?;
-
         Ok(())
     }
 
