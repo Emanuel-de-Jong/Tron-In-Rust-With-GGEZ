@@ -2,29 +2,33 @@ mod background;
 mod player;
 mod keybinds;
 mod vec2;
+mod cacher;
 
 use keybinds::Keybinds;
 use vec2::Vec2;
+use cacher::Cacher;
 use tron::*;
 use background::Background;
 use player::Player;
 use ggez::{Context, GameResult};
-use ggez::graphics::{self, Color, Font, Text};
+use ggez::graphics::{self, Color, Text};
 use ggez::timer;
 use ggez::event::{self, KeyCode, KeyMods};
 use std::{env, path};
 use std::collections::HashSet;
 
-struct MainState {
-    keybinds: Keybinds,
-    background: Background,
-    players: Vec<Player>,
-    font: Font,
-    win_text: Option<Text>
+pub struct MainState {
+    pub cacher: Cacher,
+    pub keybinds: Keybinds,
+    pub background: Background,
+    pub players: Vec<Player>,
+    pub win_text: Option<Text>
 }
 
 impl MainState {
     fn new(ctx: &mut Context) -> GameResult<MainState> {
+        let cacher = Cacher::new(ctx)?;
+
         let x = (V_GRIDS/10.0).floor()*GRID_SIZE;
         let y = (H_GRIDS/10.0).floor()*GRID_SIZE;
 
@@ -60,16 +64,16 @@ impl MainState {
             }
 
             players.push(
-                Player::new(ctx, i, position, color, starting_dir)?
+                Player::new(ctx, &cacher, i, position, color, starting_dir)?
             );
         }
         
         Ok(MainState {
             keybinds: Keybinds::default(),
-            background: Background::new(ctx)?,
+            background: Background::new(ctx, &cacher)?,
             players: players,
-            font: Font::new(ctx, FONT_PATH)?,
-            win_text: None
+            win_text: None,
+            cacher: cacher
         })
     }
 
@@ -79,7 +83,7 @@ impl MainState {
                 player.paused = true;
 
                 if !player.dead {
-                    self.win_text = Some(Text::new((format!("player {} won!", player.number), self.font, 48.0)));
+                    self.win_text = Some(Text::new((format!("player {} won!", player.number), self.cacher.font, 48.0)));
                 }
             }
         }
@@ -91,7 +95,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
         while timer::check_update_time(ctx, player::DRIVES_PER_SECOND) {
             let all_prev_positions: Vec<HashSet<Vec2>> = self.players.iter().map(|player| player.prev_positions.clone()).collect();
             for player in self.players.iter_mut() {
-                player.update(ctx, &all_prev_positions)?;
+                player.update(ctx, &self.cacher, &all_prev_positions)?;
             }
 
             self.check_win();
@@ -103,13 +107,13 @@ impl event::EventHandler<ggez::GameError> for MainState {
         graphics::clear(ctx, background::BG_COLOR);
         
         for player in self.players.iter_mut() {
-            player.draw_before(ctx)?;
+            player.draw_before(ctx, &self.cacher)?;
         }
         for player in self.players.iter_mut() {
-            player.draw_after(ctx)?;
+            player.draw_after(ctx, &self.cacher)?;
         }
         
-        self.background.draw(ctx)?;
+        self.background.draw(ctx, &self.cacher)?;
 
         match self.win_text.as_mut() {
             Some(text) => graphics::draw(ctx, text, (Vec2::new(0.0, 0.0),))?,
@@ -126,7 +130,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
         }
 
         for player in self.players.iter_mut() {
-            player.key_down_event(ctx, key, mods, b, self.keybinds.player(player.number));
+            player.key_down_event(ctx, &self.cacher, key, mods, b, self.keybinds.player(player.number));
         }
     }
 }

@@ -1,12 +1,14 @@
 use tron::*;
 use crate::vec2::Vec2;
+use crate::cacher::Cacher;
 use ggez::event::{KeyCode, KeyMods};
-use ggez::graphics::{self, Color, Font, Mesh, Text, TextFragment};
+use ggez::graphics::{self, Color, Mesh, Text, TextFragment};
 use ggez::{Context, GameResult};
 use std::collections::{HashMap, HashSet};
 
 pub const DRIVES_PER_SECOND: u32 = 3;
 pub const PLAYER_COUNT: u8 = 4;
+const DEAD_TEXT_COLOR: Color = Color::new(1.0, 0.0, 0.0, 1.0);
 
 #[derive(Clone)]
 pub struct Player {
@@ -23,14 +25,14 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(ctx: &mut Context, number: u8, position: Vec2, color: Color, starting_dir: Direction) -> GameResult<Player> {
+    pub fn new(ctx: &mut Context, cacher: &Cacher, number: u8, position: Vec2, color: Color, starting_dir: Direction) -> GameResult<Player> {
         let mut trail_color = color.clone();
         trail_color.a = 0.5;
 
-        let rect = Player::create_rect(ctx, color)?;
-        let trail_rect = Player::create_rect(ctx, trail_color)?;
+        let rect = Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), cacher.player_shape, color)?;
+        let trail_rect = Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), cacher.player_shape, trail_color)?;
 
-        let text = Text::new((number.to_string(), Font::new(ctx, FONT_PATH)?, 20.0));
+        let text = Text::new((number.to_string(), cacher.font, 20.0));
         let text_offset = Vec2::new(
             (GRID_SIZE - text.width(ctx)) / 2.0,
             (GRID_SIZE - text.height(ctx)) / 2.0
@@ -51,12 +53,7 @@ impl Player {
         Ok(s)
     }
 
-    fn create_rect(ctx: &mut Context, color: Color) -> GameResult<Mesh> {
-        let shape = graphics::Rect::new(0.0, 0.0, GRID_SIZE, GRID_SIZE);
-        Ok(Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), shape, color)?)
-    }
-
-    fn drive(&mut self, ctx: &mut Context, all_prev_positions: &Vec<HashSet<Vec2>>) -> GameResult<()> {
+    fn drive(&mut self, ctx: &mut Context, cacher: &Cacher, all_prev_positions: &Vec<HashSet<Vec2>>) -> GameResult<()> {
         match self.dir {
             Direction::Left => {
                 if self.position.x - GRID_SIZE >= 0.0 {
@@ -80,56 +77,58 @@ impl Player {
             }
         };
 
-        self.check_collision(ctx, all_prev_positions)?;
+        self.check_collision(ctx, cacher, all_prev_positions)?;
         Ok(())
     }
 
-    fn check_collision(&mut self, ctx: &mut Context, all_prev_positions: &Vec<HashSet<Vec2>>) -> GameResult<()> {
+    fn check_collision(&mut self, ctx: &mut Context, cacher: &Cacher, all_prev_positions: &Vec<HashSet<Vec2>>) -> GameResult<()> {
         for prev_positions in all_prev_positions.iter() {
             if prev_positions.contains(&self.position) {
-                self.die(ctx)?;
+                self.die(ctx, cacher)?;
             }
         }
         Ok(())
     }
 
-    fn die(&mut self, ctx: &mut Context) -> GameResult<()> {
+    fn die(&mut self, ctx: &mut Context, cacher: &Cacher) -> GameResult<()> {
         self.dead = true;
 
-        let color = Color::new(1.0, 0.0, 0.0, 1.0);
-        let font = Font::new(ctx, FONT_PATH)?;
-        let fragment: TextFragment = (self.number.to_string(), font, 22.0).into();
-        let fragment = fragment.color(color);
+        let fragment = TextFragment {
+            text: self.number.to_string(),
+            color: Some(DEAD_TEXT_COLOR),
+            font: Some(cacher.font),
+            scale: Some(22.0.into())
+        };
         self.text = Text::new(fragment);
         Ok(())
     }
 }
 
 impl Player {
-    pub fn update(&mut self, ctx: &mut Context, all_prev_positions: &Vec<HashSet<Vec2>>) -> GameResult {
+    pub fn update(&mut self, ctx: &mut Context, cacher: &Cacher, all_prev_positions: &Vec<HashSet<Vec2>>) -> GameResult {
         if self.paused || self.dead {
             return Ok(());
         }
 
-        self.drive(ctx, all_prev_positions)?;
+        self.drive(ctx, cacher, all_prev_positions)?;
         self.prev_positions.insert(self.position.clone());
         Ok(())
     }
 
-    pub fn draw_before(&mut self, ctx: &mut Context) -> GameResult {
+    pub fn draw_before(&mut self, ctx: &mut Context, cacher: &Cacher) -> GameResult {
         for pos in self.prev_positions.iter() {
             graphics::draw(ctx, &self.trail_rect, (*pos,))?;
         }
         Ok(())
     }
 
-    pub fn draw_after(&mut self, ctx: &mut Context) -> GameResult {
+    pub fn draw_after(&mut self, ctx: &mut Context, cacher: &Cacher) -> GameResult {
         graphics::draw(ctx, &self.rect, (self.position,))?;
         graphics::draw(ctx, &self.text, (self.position + self.text_offset,))?;
         Ok(())
     }
 
-    pub fn key_down_event(&mut self, _ctx: &mut Context, key: KeyCode, _mods: KeyMods, _b: bool, keybinds: &HashMap<Direction, KeyCode>) {
+    pub fn key_down_event(&mut self, _ctx: &mut Context, cacher: &Cacher, key: KeyCode, _mods: KeyMods, _b: bool, keybinds: &HashMap<Direction, KeyCode>) {
         if self.paused || self.dead {
             return;
         }
