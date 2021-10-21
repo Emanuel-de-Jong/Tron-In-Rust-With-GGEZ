@@ -4,7 +4,6 @@ mod keybinds;
 mod vec2;
 mod cacher;
 
-use keybinds::Keybinds;
 use vec2::Vec2;
 use cacher::Cacher;
 use tron::*;
@@ -19,10 +18,10 @@ use std::collections::HashSet;
 
 pub struct MainState {
     pub cacher: Cacher,
-    pub keybinds: Keybinds,
     pub background: Background,
     pub players: Vec<Player>,
-    pub win_text: Option<Text>
+    pub win_text: Option<Text>,
+    pub win_text_offset: Option<Vec2>
 }
 
 impl MainState {
@@ -69,21 +68,26 @@ impl MainState {
         }
         
         Ok(MainState {
-            keybinds: Keybinds::default(),
             background: Background::new(ctx, &cacher)?,
             players: players,
             win_text: None,
+            win_text_offset: None,
             cacher: cacher
         })
     }
 
-    fn check_win(&mut self) {
+    fn check_win(&mut self, ctx: &mut Context) {
         if self.players.iter().map(|player| player.dead as u8).sum::<u8>() >= player::PLAYER_COUNT-1 {
             for player in self.players.iter_mut() {
                 player.paused = true;
 
                 if !player.dead {
-                    self.win_text = Some(Text::new((format!("player {} won!", player.number), self.cacher.font, 48.0)));
+                    let win_text = Text::new((format!("player {} won!", player.number), self.cacher.font, 60.0));
+                    self.win_text_offset = Some(Vec2::new(
+                        (SCREEN_WIDTH/2.0) - (win_text.width(ctx)/2.0),
+                        (SCREEN_HEIGHT/2.0) - (win_text.height(ctx)/2.0)
+                    ));
+                    self.win_text = Some(win_text);
                 }
             }
         }
@@ -98,7 +102,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
                 player.update(ctx, &self.cacher, &all_prev_positions)?;
             }
 
-            self.check_win();
+            self.check_win(ctx);
         }
         Ok(())
     }
@@ -116,7 +120,8 @@ impl event::EventHandler<ggez::GameError> for MainState {
         self.background.draw(ctx, &self.cacher)?;
 
         match self.win_text.as_mut() {
-            Some(text) => graphics::draw(ctx, text, (Vec2::new(0.0, 0.0),))?,
+            Some(text) =>
+                graphics::draw(ctx, text, (self.win_text_offset.unwrap(),))?,
             None => ()
         }
 
@@ -125,12 +130,12 @@ impl event::EventHandler<ggez::GameError> for MainState {
     }
 
     fn key_down_event(&mut self, ctx: &mut Context, key: KeyCode, mods: KeyMods, b: bool) {
-        if key == self.keybinds.general[&Action::Restart] {
+        if key == self.cacher.keybinds.general[&Action::Restart] {
             *self = MainState::new(ctx).unwrap();
         }
 
         for player in self.players.iter_mut() {
-            player.key_down_event(ctx, &self.cacher, key, mods, b, self.keybinds.player(player.number));
+            player.key_down_event(ctx, key, mods, b, &self.cacher);
         }
     }
 }

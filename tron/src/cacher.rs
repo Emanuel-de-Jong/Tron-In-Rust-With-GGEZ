@@ -1,6 +1,7 @@
 use tron::*;
 use crate::vec2::Vec2;
 use crate::background;
+use crate::keybinds::Keybinds;
 use ggez::event::{KeyCode, KeyMods};
 use ggez::graphics::{self, Color, Font, Mesh, Text, TextFragment, Rect};
 use ggez::{Context, GameResult};
@@ -10,7 +11,8 @@ pub struct Cacher {
     pub font: Font,
     pub player_shape: Rect,
     pub bg_h_line: Mesh,
-    pub bg_v_line: Mesh
+    pub bg_v_line: Mesh,
+    pub keybinds: Keybinds
 }
 
 impl Cacher {
@@ -41,7 +43,8 @@ impl Cacher {
             font: Font::new(ctx, FONT_PATH)?,
             player_shape: Rect::new(0.0, 0.0, GRID_SIZE, GRID_SIZE),
             bg_h_line: bg_h_line,
-            bg_v_line: bg_v_line
+            bg_v_line: bg_v_line,
+            keybinds: Keybinds::default()
         })
     }
 }

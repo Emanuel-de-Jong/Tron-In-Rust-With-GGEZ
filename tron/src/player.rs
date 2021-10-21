@@ -6,8 +6,8 @@ use ggez::graphics::{self, Color, Mesh, Text, TextFragment};
 use ggez::{Context, GameResult};
 use std::collections::{HashMap, HashSet};
 
-pub const DRIVES_PER_SECOND: u32 = 3;
-pub const PLAYER_COUNT: u8 = 4;
+pub const DRIVES_PER_SECOND: u32 = 10;
+pub const PLAYER_COUNT: u8 = 2;
 const DEAD_TEXT_COLOR: Color = Color::new(1.0, 0.0, 0.0, 1.0);
 
 #[derive(Clone)]
@@ -128,11 +128,12 @@ impl Player {
         Ok(())
     }
 
-    pub fn key_down_event(&mut self, _ctx: &mut Context, cacher: &Cacher, key: KeyCode, _mods: KeyMods, _b: bool, keybinds: &HashMap<Direction, KeyCode>) {
+    pub fn key_down_event(&mut self, _ctx: &mut Context, key: KeyCode, _mods: KeyMods, _b: bool, cacher: &Cacher) {
         if self.paused || self.dead {
             return;
         }
 
+        let keybinds = cacher.keybinds.player(self.number);
         if key == keybinds[&Direction::Left] {
             if self.dir != Direction::Right {
                 self.dir = Direction::Left;
