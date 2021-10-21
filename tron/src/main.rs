@@ -9,7 +9,7 @@ use tron::*;
 use background::Background;
 use player::Player;
 use ggez::{Context, GameResult};
-use ggez::graphics::{self, Color};
+use ggez::graphics::{self, Color, Font, Text};
 use ggez::timer;
 use ggez::event::{self, KeyCode, KeyMods};
 use std::{env, path};
@@ -18,21 +18,37 @@ use std::collections::HashSet;
 struct MainState {
     keybinds: Keybinds,
     background: Background,
-    players: Vec<Player>
+    players: Vec<Player>,
+    font: Font,
+    win_text: Option<Text>
 }
 
 impl MainState {
     fn new(ctx: &mut Context) -> GameResult<MainState> {
         let x = (V_GRIDS/10.0).floor()*GRID_SIZE;
         let players = vec![
-            Player::new(ctx, "player1".into(), Vec2::new(x, SCREEN_HEIGHT/2.0), Color::new(0.5, 0.5, 1.0, 1.0), Direction::Right)?,
-            Player::new(ctx, "player2".into(), Vec2::new(SCREEN_WIDTH-x-GRID_SIZE, SCREEN_HEIGHT/2.0), Color::new(0.5, 1.0, 0.5, 1.0), Direction::Left)?
+            Player::new(ctx, 1, Vec2::new(x, SCREEN_HEIGHT/2.0), Color::new(0.5, 0.5, 1.0, 1.0), Direction::Right)?,
+            Player::new(ctx, 2, Vec2::new(SCREEN_WIDTH-x-GRID_SIZE, SCREEN_HEIGHT/2.0), Color::new(0.5, 1.0, 0.5, 1.0), Direction::Left)?
         ];
         Ok(MainState {
             keybinds: Keybinds::default(),
             background: Background::new(ctx)?,
-            players: players
+            players: players,
+            font: Font::new(ctx, FONT_PATH)?,
+            win_text: None
         })
+    }
+
+    fn check_win(&mut self) {
+        if self.players.iter().map(|player| player.dead as u8).sum::<u8>() > 0 {
+            for player in self.players.iter_mut() {
+                player.paused = true;
+
+                if !player.dead {
+                    self.win_text = Some(Text::new((format!("player {} won!", player.number), self.font, 48.0)));
+                }
+            }
+        }
     }
 }
 
@@ -43,6 +59,8 @@ impl event::EventHandler<ggez::GameError> for MainState {
             for player in self.players.iter_mut() {
                 player.update(ctx, &all_prev_positions)?;
             }
+
+            self.check_win();
         }
         Ok(())
     }
@@ -53,7 +71,13 @@ impl event::EventHandler<ggez::GameError> for MainState {
         for player in self.players.iter_mut() {
             player.draw(ctx)?;
         }
+        
         self.background.draw(ctx)?;
+
+        match self.win_text.as_mut() {
+            Some(text) => graphics::draw(ctx, text, (Vec2::new(0.0, 0.0),))?,
+            None => ()
+        }
 
         graphics::present(ctx)?;
         Ok(())
@@ -61,11 +85,11 @@ impl event::EventHandler<ggez::GameError> for MainState {
 
     fn key_down_event(&mut self, ctx: &mut Context, key: KeyCode, mods: KeyMods, b: bool) {
         if key == self.keybinds.general[&Action::Restart] {
-
+            *self = MainState::new(ctx).unwrap();
         }
 
         for player in self.players.iter_mut() {
-            player.key_down_event(ctx, key, mods, b, self.keybinds.player(&player.name));
+            player.key_down_event(ctx, key, mods, b, self.keybinds.player(player.number));
         }
     }
 }

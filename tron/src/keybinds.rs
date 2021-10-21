@@ -11,7 +11,7 @@ pub struct Keybinds {
 impl Keybinds {
     pub fn default() -> Keybinds {
         let mut general = HashMap::new();
-        general.insert(Action::Restart, KeyCode::Escape);
+        general.insert(Action::Restart, KeyCode::R);
 
         let mut player1 = HashMap::new();
         player1.insert(Direction::Left, KeyCode::A);
@@ -32,11 +32,11 @@ impl Keybinds {
         }
     }
 
-    pub fn player(&self, name: &str) -> &HashMap<Direction, KeyCode> {
-        if name == "player1" {
+    pub fn player(&self, number: u8) -> &HashMap<Direction, KeyCode> {
+        if number == 1 {
             return &self.player1;
         }
-        else if name == "player2" {
+        else if number == 2 {
             return &self.player2;
         }
         &self.player1

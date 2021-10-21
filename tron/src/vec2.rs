@@ -27,3 +27,14 @@ impl From<Vec2> for Point2<f32> {
         Point2 { x: vec.x, y: vec.y }
     }
 }
+
+impl std::ops::Add for Vec2 {
+    type Output = Self;
+
+    fn add(self, other: Self) -> Self {
+        Self {
+            x: self.x + other.x,
+            y: self.y + other.y,
+        }
+    }
+}
