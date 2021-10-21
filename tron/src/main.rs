@@ -15,12 +15,13 @@ use ggez::event::{self, KeyCode, KeyMods};
 use std::{env, path};
 use std::collections::HashSet;
 
+
 struct MainState {
+    win_text: Option<Text>,
+    win_text_offset: Option<Vec2>,
     cacher: Cacher,
     background: Background,
-    players: Vec<Player>,
-    win_text: Option<Text>,
-    win_text_offset: Option<Vec2>
+    players: Vec<Player>
 }
 
 impl MainState {
@@ -67,10 +68,10 @@ impl MainState {
         }
         
         Ok(MainState {
-            background: Background::new(ctx, &cacher)?,
-            players: players,
             win_text: None,
             win_text_offset: None,
+            background: Background::new(ctx, &cacher)?,
+            players: players,
             cacher: cacher
         })
     }

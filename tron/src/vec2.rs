@@ -1,6 +1,7 @@
 use ggez::mint::Point2;
 use std::hash::{Hash, Hasher};
 
+
 #[derive(PartialEq, Clone, Copy, Debug)]
 pub struct Vec2 {
     pub x: f32,

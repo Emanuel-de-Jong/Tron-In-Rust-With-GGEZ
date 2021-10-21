@@ -6,20 +6,22 @@ use ggez::event::{KeyCode, KeyMods};
 use ggez::graphics::{self, Color, Mesh, Text, TextFragment};
 use std::collections::HashSet;
 
-pub const DRIVES_PER_SECOND: u32 = 10;
+
 pub const PLAYER_COUNT: u8 = 2;
+pub const DRIVES_PER_SECOND: u32 = 10;
 const DEAD_TEXT_COLOR: Color = Color::new(1.0, 0.0, 0.0, 1.0);
+
 
 #[derive(Clone)]
 pub struct Player {
     pub number: u8,
+    pub paused: bool,
+    pub dead: bool,
     pub prev_positions: HashSet<Vec2>,
     position: Vec2,
     rect: Mesh,
     trail_rect: Mesh,
     dir: Direction,
-    pub dead: bool,
-    pub paused: bool,
     text: Text,
     text_offset: Vec2
 }
@@ -40,13 +42,13 @@ impl Player {
 
         let s = Player {
             number: number,
+            paused: false,
+            dead: false,
             prev_positions: HashSet::new(),
             position: position,
             rect: rect,
             trail_rect: trail_rect,
             dir: starting_dir,
-            dead: false,
-            paused: false,
             text: text,
             text_offset: text_offset
         };

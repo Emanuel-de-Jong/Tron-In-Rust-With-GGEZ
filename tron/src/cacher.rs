@@ -5,12 +5,13 @@ use crate::keybinds::Keybinds;
 use ggez::{Context, GameResult};
 use ggez::graphics::{self, Font, Mesh, Rect};
 
+
 pub struct Cacher {
     pub font: Font,
-    pub player_shape: Rect,
+    pub keybinds: Keybinds,
     pub bg_h_line: Mesh,
     pub bg_v_line: Mesh,
-    pub keybinds: Keybinds
+    pub player_shape: Rect
 }
 
 impl Cacher {
@@ -39,10 +40,10 @@ impl Cacher {
         
         Ok(Cacher {
             font: Font::new(ctx, FONT_PATH)?,
-            player_shape: Rect::new(0.0, 0.0, GRID_SIZE, GRID_SIZE),
+            keybinds: Keybinds::default(),
             bg_h_line: bg_h_line,
             bg_v_line: bg_v_line,
-            keybinds: Keybinds::default()
+            player_shape: Rect::new(0.0, 0.0, GRID_SIZE, GRID_SIZE)
         })
     }
 }

@@ -2,6 +2,7 @@ use tron::*;
 use ggez::event::KeyCode;
 use std::collections::HashMap;
 
+
 pub struct Keybinds {
     pub general: HashMap<Action, KeyCode>,
     players: Vec<HashMap<Direction, KeyCode>>
