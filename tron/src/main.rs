@@ -71,8 +71,8 @@ impl MainState {
             win_text: None,
             win_text_offset: None,
             background: Background::new(ctx, &cacher)?,
-            players: players,
-            cacher: cacher
+            players,
+            cacher
         })
     }
 
@@ -119,10 +119,8 @@ impl event::EventHandler<ggez::GameError> for MainState {
         
         self.background.draw(ctx, &self.cacher)?;
 
-        match self.win_text.as_mut() {
-            Some(text) =>
-                graphics::draw(ctx, text, (self.win_text_offset.unwrap(),))?,
-            None => ()
+        if let Some(text) = self.win_text.as_mut() {
+            graphics::draw(ctx, text, (self.win_text_offset.unwrap(),))?
         }
 
         graphics::present(ctx)?;

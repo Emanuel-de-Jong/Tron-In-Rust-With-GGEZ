@@ -38,7 +38,7 @@ impl Keybinds {
         player4.insert(Direction::Down, KeyCode::Down);
 
         Keybinds {
-            general: general,
+            general,
             players: vec![player1, player2, player3, player4]
         }
     }

@@ -41,8 +41,8 @@ impl Cacher {
         Ok(Cacher {
             font: Font::new(ctx, FONT_PATH)?,
             keybinds: Keybinds::default(),
-            bg_h_line: bg_h_line,
-            bg_v_line: bg_v_line,
+            bg_h_line,
+            bg_v_line,
             player_shape: Rect::new(0.0, 0.0, GRID_SIZE, GRID_SIZE)
         })
     }

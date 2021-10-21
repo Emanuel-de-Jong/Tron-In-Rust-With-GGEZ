@@ -27,8 +27,8 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(ctx: &mut Context, cacher: &Cacher, number: u8, position: Vec2, color: Color, starting_dir: Direction) -> GameResult<Player> {
-        let mut trail_color = color.clone();
+    pub fn new(ctx: &mut Context, cacher: &Cacher, number: u8, position: Vec2, color: Color, dir: Direction) -> GameResult<Player> {
+        let mut trail_color = color;
         trail_color.a = 0.5;
 
         let rect = Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), cacher.player_shape, color)?;
@@ -41,21 +41,21 @@ impl Player {
         );
 
         let s = Player {
-            number: number,
+            number,
             paused: false,
             dead: false,
             prev_positions: HashSet::new(),
-            position: position,
-            rect: rect,
-            trail_rect: trail_rect,
-            dir: starting_dir,
-            text: text,
-            text_offset: text_offset
+            position,
+            rect,
+            trail_rect,
+            dir,
+            text,
+            text_offset
         };
         Ok(s)
     }
 
-    fn drive(&mut self, ctx: &mut Context, cacher: &Cacher, all_prev_positions: &Vec<HashSet<Vec2>>) -> GameResult<()> {
+    fn drive(&mut self, ctx: &mut Context, cacher: &Cacher, all_prev_positions: &[HashSet<Vec2>]) -> GameResult<()> {
         match self.dir {
             Direction::Left => {
                 if self.position.x - GRID_SIZE >= 0.0 {
@@ -83,7 +83,7 @@ impl Player {
         Ok(())
     }
 
-    fn check_collision(&mut self, ctx: &mut Context, cacher: &Cacher, all_prev_positions: &Vec<HashSet<Vec2>>) -> GameResult<()> {
+    fn check_collision(&mut self, ctx: &mut Context, cacher: &Cacher, all_prev_positions: &[HashSet<Vec2>]) -> GameResult<()> {
         for prev_positions in all_prev_positions.iter() {
             if prev_positions.contains(&self.position) {
                 self.die(ctx, cacher)?;
@@ -107,13 +107,13 @@ impl Player {
 }
 
 impl Player {
-    pub fn update(&mut self, ctx: &mut Context, cacher: &Cacher, all_prev_positions: &Vec<HashSet<Vec2>>) -> GameResult {
+    pub fn update(&mut self, ctx: &mut Context, cacher: &Cacher, all_prev_positions: &[HashSet<Vec2>]) -> GameResult {
         if self.paused || self.dead {
             return Ok(());
         }
 
         self.drive(ctx, cacher, all_prev_positions)?;
-        self.prev_positions.insert(self.position.clone());
+        self.prev_positions.insert(self.position);
         Ok(())
     }
 
