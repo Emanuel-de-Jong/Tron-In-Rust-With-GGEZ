@@ -1,10 +1,9 @@
 use tron::*;
-use crate::keybinds::Keybinds;
 use crate::vec2::Vec2;
 use ggez::event::{KeyCode, KeyMods};
 use ggez::graphics::{self, Color, Mesh};
 use ggez::{Context, GameResult};
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 pub const DRIVES_PER_SECOND: u32 = 10;
 
@@ -107,9 +106,7 @@ impl Player {
         Ok(())
     }
 
-    pub fn key_down_event(&mut self, _ctx: &mut Context, key: KeyCode, _mods: KeyMods, _b: bool) {
-        let keybinds = Keybinds::player(&self.name);
-
+    pub fn key_down_event(&mut self, _ctx: &mut Context, key: KeyCode, _mods: KeyMods, _b: bool, keybinds: &HashMap<Direction, KeyCode>) {
         if key == keybinds[&Direction::Left] {
             if self.dir != Direction::Right {
                 self.dir = Direction::Left;

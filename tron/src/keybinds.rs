@@ -3,33 +3,42 @@ use ggez::event::KeyCode;
 use tron::*;
 
 pub struct Keybinds {
+    pub general: HashMap<Action, KeyCode>,
+    pub player1: HashMap<Direction, KeyCode>,
+    pub player2: HashMap<Direction, KeyCode>
 }
 
 impl Keybinds {
-    pub fn general() -> HashMap<Action, KeyCode> {
+    pub fn default() -> Keybinds {
         let mut general = HashMap::new();
         general.insert(Action::Restart, KeyCode::Escape);
-        general
+
+        let mut player1 = HashMap::new();
+        player1.insert(Direction::Left, KeyCode::A);
+        player1.insert(Direction::Right, KeyCode::D);
+        player1.insert(Direction::Up, KeyCode::W);
+        player1.insert(Direction::Down, KeyCode::S);
+
+        let mut player2 = HashMap::new();
+        player2.insert(Direction::Left, KeyCode::G);
+        player2.insert(Direction::Right, KeyCode::J);
+        player2.insert(Direction::Up, KeyCode::Y);
+        player2.insert(Direction::Down, KeyCode::H);
+
+        Keybinds {
+            general: general,
+            player1: player1,
+            player2: player2
+        }
     }
 
-    pub fn player(name: &str) -> HashMap<Direction, KeyCode> {
+    pub fn player(&self, name: &str) -> &HashMap<Direction, KeyCode> {
         if name == "player1" {
-            let mut player = HashMap::new();
-            player.insert(Direction::Left, KeyCode::A);
-            player.insert(Direction::Right, KeyCode::D);
-            player.insert(Direction::Up, KeyCode::W);
-            player.insert(Direction::Down, KeyCode::S);
-            return player;
+            return &self.player1;
         }
         else if name == "player2" {
-            let mut player = HashMap::new();
-            player.insert(Direction::Left, KeyCode::G);
-            player.insert(Direction::Right, KeyCode::J);
-            player.insert(Direction::Up, KeyCode::Y);
-            player.insert(Direction::Down, KeyCode::H);
-            return player;
+            return &self.player2;
         }
-
-        HashMap::new()
+        &self.player1
     }
 }

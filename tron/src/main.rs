@@ -16,6 +16,7 @@ use std::{env, path};
 use std::collections::HashSet;
 
 struct MainState {
+    keybinds: Keybinds,
     background: Background,
     players: Vec<Player>
 }
@@ -28,6 +29,7 @@ impl MainState {
             Player::new(ctx, "player2".into(), Vec2::new(SCREEN_WIDTH-x-GRID_SIZE, SCREEN_HEIGHT/2.0), Color::new(0.5, 1.0, 0.5, 1.0), Direction::Left)?
         ];
         Ok(MainState {
+            keybinds: Keybinds::default(),
             background: Background::new(ctx)?,
             players: players
         })
@@ -58,13 +60,12 @@ impl event::EventHandler<ggez::GameError> for MainState {
     }
 
     fn key_down_event(&mut self, ctx: &mut Context, key: KeyCode, mods: KeyMods, b: bool) {
-        let keybinds = Keybinds::general();
-        if key == keybinds[&Action::Restart] {
+        if key == self.keybinds.general[&Action::Restart] {
 
         }
 
         for player in self.players.iter_mut() {
-            player.key_down_event(ctx, key, mods, b);
+            player.key_down_event(ctx, key, mods, b, self.keybinds.player(&player.name));
         }
     }
 }
