@@ -4,24 +4,23 @@ mod keybinds;
 mod vec2;
 mod cacher;
 
+use tron::*;
 use vec2::Vec2;
 use cacher::Cacher;
-use tron::*;
 use background::Background;
 use player::Player;
-use ggez::{Context, GameResult};
+use ggez::{Context, GameResult, timer};
 use ggez::graphics::{self, Color, Text};
-use ggez::timer;
 use ggez::event::{self, KeyCode, KeyMods};
 use std::{env, path};
 use std::collections::HashSet;
 
-pub struct MainState {
-    pub cacher: Cacher,
-    pub background: Background,
-    pub players: Vec<Player>,
-    pub win_text: Option<Text>,
-    pub win_text_offset: Option<Vec2>
+struct MainState {
+    cacher: Cacher,
+    background: Background,
+    players: Vec<Player>,
+    win_text: Option<Text>,
+    win_text_offset: Option<Vec2>
 }
 
 impl MainState {
@@ -141,7 +140,7 @@ impl event::EventHandler<ggez::GameError> for MainState {
 }
 
 
-pub fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
+fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let resource_dir = if let Ok(manifest_dir) = env::var("CARGO_MANIFEST_DIR") {
         let mut path = path::PathBuf::from(manifest_dir);
         path.push("resources");

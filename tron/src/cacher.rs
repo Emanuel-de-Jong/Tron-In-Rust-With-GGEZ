@@ -2,10 +2,8 @@ use tron::*;
 use crate::vec2::Vec2;
 use crate::background;
 use crate::keybinds::Keybinds;
-use ggez::event::{KeyCode, KeyMods};
-use ggez::graphics::{self, Color, Font, Mesh, Text, TextFragment, Rect};
 use ggez::{Context, GameResult};
-use std::collections::{HashMap, HashSet};
+use ggez::graphics::{self, Font, Mesh, Rect};
 
 pub struct Cacher {
     pub font: Font,

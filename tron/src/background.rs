@@ -1,8 +1,8 @@
 use tron::*;
 use crate::vec2::Vec2;
 use crate::cacher::Cacher;
-use ggez::graphics::{self, Color};
 use ggez::{Context, GameResult};
+use ggez::graphics::{self, Color};
 
 pub const BG_COLOR: Color = Color::new(0.1, 0.2, 0.3, 1.0);
 pub const LINE_COLOR: Color = Color::new(0.5, 0.5, 0.5, 1.0);

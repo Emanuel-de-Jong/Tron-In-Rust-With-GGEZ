@@ -1,10 +1,10 @@
-use std::collections::HashMap;
-use ggez::event::KeyCode;
 use tron::*;
+use ggez::event::KeyCode;
+use std::collections::HashMap;
 
 pub struct Keybinds {
     pub general: HashMap<Action, KeyCode>,
-    pub players: Vec<HashMap<Direction, KeyCode>>
+    players: Vec<HashMap<Direction, KeyCode>>
 }
 
 impl Keybinds {

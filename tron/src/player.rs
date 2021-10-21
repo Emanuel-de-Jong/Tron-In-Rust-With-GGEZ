@@ -1,10 +1,10 @@
 use tron::*;
 use crate::vec2::Vec2;
 use crate::cacher::Cacher;
+use ggez::{Context, GameResult};
 use ggez::event::{KeyCode, KeyMods};
 use ggez::graphics::{self, Color, Mesh, Text, TextFragment};
-use ggez::{Context, GameResult};
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 pub const DRIVES_PER_SECOND: u32 = 10;
 pub const PLAYER_COUNT: u8 = 2;
@@ -90,7 +90,7 @@ impl Player {
         Ok(())
     }
 
-    fn die(&mut self, ctx: &mut Context, cacher: &Cacher) -> GameResult<()> {
+    fn die(&mut self, _ctx: &mut Context, cacher: &Cacher) -> GameResult<()> {
         self.dead = true;
 
         let fragment = TextFragment {
@@ -115,14 +115,14 @@ impl Player {
         Ok(())
     }
 
-    pub fn draw_before(&mut self, ctx: &mut Context, cacher: &Cacher) -> GameResult {
+    pub fn draw_before(&mut self, ctx: &mut Context, _cacher: &Cacher) -> GameResult {
         for pos in self.prev_positions.iter() {
             graphics::draw(ctx, &self.trail_rect, (*pos,))?;
         }
         Ok(())
     }
 
-    pub fn draw_after(&mut self, ctx: &mut Context, cacher: &Cacher) -> GameResult {
+    pub fn draw_after(&mut self, ctx: &mut Context, _cacher: &Cacher) -> GameResult {
         graphics::draw(ctx, &self.rect, (self.position,))?;
         graphics::draw(ctx, &self.text, (self.position + self.text_offset,))?;
         Ok(())
