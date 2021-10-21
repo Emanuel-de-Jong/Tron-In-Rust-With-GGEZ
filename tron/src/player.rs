@@ -4,14 +4,14 @@ use crate::vec2::Vec2;
 use ggez::event::{KeyCode, KeyMods};
 use ggez::graphics::{self, Color, Mesh};
 use ggez::{Context, GameResult};
-use ggez::timer;
 use std::collections::HashSet;
 
 pub const DRIVES_PER_SECOND: u32 = 10;
 
+#[derive(Clone)]
 pub struct Player {
-    name: String,
-    prev_positions: HashSet<Vec2>,
+    pub name: String,
+    pub prev_positions: HashSet<Vec2>,
     position: Vec2,
     rect: Mesh,
     trail_rect: Mesh,
@@ -20,7 +20,7 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(ctx: &mut Context, name: String, color: Color) -> GameResult<Player> {
+    pub fn new(ctx: &mut Context, name: String, position: Vec2, color: Color, starting_dir: Direction) -> GameResult<Player> {
         let mut trail_color = color.clone();
         trail_color.a = 0.7;
 
@@ -30,10 +30,10 @@ impl Player {
         let s = Player {
             name: name,
             prev_positions: HashSet::new(),
-            position: Vec2::new(SCREEN_WIDTH/2.0, SCREEN_HEIGHT/2.0),
+            position: position,
             rect: rect,
             trail_rect: trail_rect,
-            dir: Direction::Right,
+            dir: starting_dir,
             dead: false
         };
         Ok(s)
@@ -44,7 +44,7 @@ impl Player {
         Ok(Mesh::new_rectangle(ctx, graphics::DrawMode::fill(), shape, color)?)
     }
 
-    fn drive(&mut self, ctx: &mut Context) -> GameResult<()> {
+    fn drive(&mut self, ctx: &mut Context, all_prev_positions: &Vec<HashSet<Vec2>>) -> GameResult<()> {
         if self.dead {
             return Ok(());
         }
@@ -72,13 +72,15 @@ impl Player {
             }
         };
 
-        self.check_collision(ctx)?;
+        self.check_collision(ctx, all_prev_positions)?;
         Ok(())
     }
 
-    fn check_collision(&mut self, ctx: &mut Context) -> GameResult<()> {
-        if self.prev_positions.contains(&self.position) {
-            self.die(ctx)?;
+    fn check_collision(&mut self, ctx: &mut Context, all_prev_positions: &Vec<HashSet<Vec2>>) -> GameResult<()> {
+        for prev_positions in all_prev_positions.iter() {
+            if prev_positions.contains(&self.position) {
+                self.die(ctx)?;
+            }
         }
         Ok(())
     }
@@ -89,11 +91,9 @@ impl Player {
         Ok(())
     }
     
-    pub fn update(&mut self, ctx: &mut Context) -> GameResult {
-        while timer::check_update_time(ctx, DRIVES_PER_SECOND) {
-            self.drive(ctx)?;
-            self.prev_positions.insert(self.position.clone());
-        }
+    pub fn update(&mut self, ctx: &mut Context, all_prev_positions: &Vec<HashSet<Vec2>>) -> GameResult {
+        self.drive(ctx, all_prev_positions)?;
+        self.prev_positions.insert(self.position.clone());
         Ok(())
     }
 
